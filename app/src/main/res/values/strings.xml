@@ -1,10 +1,58 @@
 <resources>
     <string name="app_name">NovaCut</string>
-    <string name="title_editor">NovaCut Video Editor</string>
-    <string name="action_split">Split</string>
-    <string name="action_trim">Trim</string>
-    <string name="action_delete">Delete</string>
+    <string name="project_default_title">NovaCut Video 01</string>
+    <string name="resolution_default">1080P</string>
+
+    <!-- Global Top & Canvas Actions -->
     <string name="action_undo">Undo</string>
     <string name="action_redo">Redo</string>
     <string name="action_export">Export</string>
+    <string name="action_play">Play</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_fullscreen">Fullscreen</string>
+    <string name="action_snap_on">Snapping On</string>
+    <string name="action_snap_off">Snapping Off</string>
+
+    <!-- Level 1 Toolbar: Global Actions -->
+    <string name="menu_edit">Edit</string>
+    <string name="menu_audio">Audio</string>
+    <string name="menu_text">Text</string>
+    <string name="menu_overlay">Overlay</string>
+    <string name="menu_effects">Effects</string>
+    <string name="menu_filters">Filters</string>
+    <string name="menu_ratio">Ratio</string>
+    <string name="menu_adjust">Adjust</string>
+    <string name="menu_canvas">Canvas</string>
+
+    <!-- Level 2 Toolbar: Clip Editing Actions -->
+    <string name="clip_action_split">Split</string>
+    <string name="clip_action_speed">Speed</string>
+    <string name="clip_action_animation">Animation</string>
+    <string name="clip_action_volume">Volume</string>
+    <string name="clip_action_transform">Transform</string>
+    <string name="clip_action_filters">Filters</string>
+    <string name="clip_action_delete">Delete</string>
+    <string name="clip_action_duplicate">Duplicate</string>
+    <string name="clip_action_reverse">Reverse</string>
+    <string name="clip_action_freeze">Freeze</string>
+
+    <!-- Modal & Sub-panel Headings -->
+    <string name="panel_speed_title">Playback Speed</string>
+    <string name="panel_volume_title">Volume &amp; Fades</string>
+    <string name="panel_color_title">Color Grading</string>
+    <string name="panel_ratio_title">Canvas Aspect Ratio</string>
+    <string name="panel_text_title">Add Text Overlay</string>
+    <string name="panel_export_title">Export Video</string>
+
+    <!-- Sliders & Labels -->
+    <string name="label_brightness">Brightness</string>
+    <string name="label_contrast">Contrast</string>
+    <string name="label_saturation">Saturation</string>
+    <string name="label_temperature">Warmth</string>
+    <string name="label_vignette">Vignette</string>
+    <string name="label_fade_in">Fade In (s)</string>
+    <string name="label_fade_out">Fade Out (s)</string>
+    <string name="btn_apply">Apply</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_start_export">Start Export</string>
 </resources>
