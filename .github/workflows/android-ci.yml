@@ -34,13 +34,9 @@ jobs:
           java-version: '21'
           cache: 'gradle'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          cmdline-tools-version: 11076708 # Standard Android Command-Line Tools
-
       - name: Accept Android Licenses
-        run: yes | sdkmanager --licenses || true
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Make Gradle Wrapper Executable
         run: chmod +x gradlew
