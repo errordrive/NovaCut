@@ -1,0 +1,11 @@
+<resources>
+    <color name="primary">#1E1E2E</color>
+    <color name="primary_dark">#11111B</color>
+    <color name="accent">#00E5FF</color>
+    <color name="background_dark">#121212</color>
+    <color name="surface_dark">#181825</color>
+    <color name="text_primary">#CDD6F4</color>
+    <color name="timeline_track_bg">#313244</color>
+    <color name="timeline_clip_bg">#45475A</color>
+    <color name="playhead_color">#F38BA8</color>
+</resources>

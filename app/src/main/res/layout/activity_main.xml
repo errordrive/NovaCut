@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_dark">
+
+    <!-- Top App Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:background="@color/surface_dark">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/app_name"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_undo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_undo"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btn_redo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/action_redo"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btn_export"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/action_export"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Canvas Preview Surface -->
+    <FrameLayout
+        android:id="@+id/preview_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#000000">
+
+        <TextView
+            android:id="@+id/tv_preview_overlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="NovaCut Preview Canvas"
+            android:textColor="#888888"
+            android:textSize="16sp" />
+    </FrameLayout>
+
+    <!-- Timecode & Playhead Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:background="@color/surface_dark">
+
+        <TextView
+            android:id="@+id/tv_playhead_timecode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00:00"
+            android:textColor="@color/accent"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" / "
+            android:textColor="#666666"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tv_total_timecode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00:00"
+            android:textColor="#888888"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- Multitrack Timeline Container -->
+    <FrameLayout
+        android:id="@+id/timeline_container"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="@color/timeline_track_bg">
+
+        <TextView
+            android:id="@+id/tv_timeline_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Multitrack Timeline (Magnetic Main Track)"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp" />
+    </FrameLayout>
+
+    <!-- Bottom Tool Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@color/surface_dark">
+
+        <Button
+            android:id="@+id/btn_split"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_split" />
+
+        <Button
+            android:id="@+id/btn_trim"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/action_trim" />
+
+        <Button
+            android:id="@+id/btn_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/action_delete" />
+    </LinearLayout>
+
+</LinearLayout>

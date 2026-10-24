@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">NovaCut</string>
+    <string name="title_editor">NovaCut Video Editor</string>
+    <string name="action_split">Split</string>
+    <string name="action_trim">Trim</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_redo">Redo</string>
+    <string name="action_export">Export</string>
+</resources>
