@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 data class ClipSegment(
     val id: String,
     val assetId: String,
-    val trackId: String,
+    val trackId: String = "",
+    val name: String = "",
     val sourceTimeRangeUs: TimeRangeUs,
     val targetTimeRangeUs: TimeRangeUs,
     val speedConfig: SpeedConfig = SpeedConfig.NORMAL,
@@ -22,6 +23,14 @@ data class ClipSegment(
 ) {
     init {
         require(volume >= 0.0f) { "Clip volume must be non-negative: $volume" }
+    }
+
+    /**
+     * Checks whether the clip is active and visible at the given absolute timeline timestamp.
+     */
+    fun isLayerVisibleAt(timelineTimeUs: Long): Boolean {
+        return timelineTimeUs >= targetTimeRangeUs.startUs &&
+                timelineTimeUs <= (targetTimeRangeUs.startUs + targetTimeRangeUs.durationUs)
     }
 
     /**

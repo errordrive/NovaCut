@@ -3,40 +3,21 @@ package com.procut
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.procut.engine.TimelineEngine
-import com.procut.history.UndoRedoStack
-import com.procut.model.CanvasConfig
-import com.procut.model.EditorProject
-import com.procut.model.Track
-import com.procut.model.TrackType
+import com.procut.ui.screens.EditorScreen
 import com.procut.ui.theme.ProCutTheme
-import java.util.UUID
+import com.procut.ui.viewmodel.EditorViewModel
 
 class MainActivity : ComponentActivity() {
 
-    private val engine = TimelineEngine()
-    private val undoRedoStack = UndoRedoStack()
+    private val editorViewModel: EditorViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val defaultProject = EditorProject(
-            id = UUID.randomUUID().toString(),
-            name = "New ProCut Project",
-            canvasConfig = CanvasConfig(),
-            tracks = listOf(
-                Track(id = UUID.randomUUID().toString(), type = TrackType.MAIN_VIDEO, name = "Main Video"),
-                Track(id = UUID.randomUUID().toString(), type = TrackType.PIP_OVERLAY, name = "Overlay 1"),
-                Track(id = UUID.randomUUID().toString(), type = TrackType.AUDIO, name = "Audio 1")
-            )
-        )
 
         setContent {
             ProCutTheme {
@@ -44,38 +25,14 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    EditorScreen(defaultProject = defaultProject)
+                    EditorScreen(
+                        viewModel = editorViewModel,
+                        onBackToDrafts = {
+                            finish()
+                        }
+                    )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun EditorScreen(defaultProject: EditorProject) {
-    var project by remember { mutableStateOf(defaultProject) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = project.name,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Aspect Ratio: ${project.canvasConfig.aspectRatio.label}",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Text(
-            text = "Total Duration: ${project.totalDurationUs / 1_000_000.0}s | Tracks: ${project.tracks.size}",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onBackground
-        )
     }
 }
