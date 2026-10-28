@@ -1,12 +1,16 @@
 package com.procut.export
 
+import android.content.ContentValues
 import android.content.Context
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.media.MediaMuxer
+import android.net.Uri
 import android.opengl.*
+import android.os.Build
 import android.os.SystemClock
+import android.provider.MediaStore
 import android.util.Log
 import com.procut.model.EditorProject
 import com.procut.model.ExportConfig
@@ -203,6 +207,7 @@ class HardwareExportEngine(
             )
 
             Log.i(TAG, "Hardware Export Complete: ${outputFile.length()} bytes in ${finalElapsedMs}ms")
+            exportToMediaStore(context, outputFile, project.name)
             return@withContext outputFile
 
         } catch (t: Throwable) {
@@ -313,5 +318,43 @@ class HardwareExportEngine(
             }
         }
         return activeTrackIndex
+    }
+
+    /**
+     * Registers the exported MP4 file into Android MediaStore Video library
+     * so it immediately displays in the device Gallery and video apps.
+     */
+    fun exportToMediaStore(context: Context, videoFile: File, title: String): Uri? {
+        val resolver = context.contentResolver
+        val values = ContentValues().apply {
+            put(MediaStore.Video.Media.DISPLAY_NAME, "${title}_${System.currentTimeMillis()}.mp4")
+            put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+            put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
+            put(MediaStore.Video.Media.DATE_MODIFIED, System.currentTimeMillis() / 1000)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/ProCut")
+                put(MediaStore.Video.Media.IS_PENDING, 1)
+            }
+        }
+
+        val uri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values) ?: return null
+
+        try {
+            resolver.openOutputStream(uri)?.use { out ->
+                videoFile.inputStream().use { input ->
+                    input.copyTo(out)
+                }
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                values.clear()
+                values.put(MediaStore.Video.Media.IS_PENDING, 0)
+                resolver.update(uri, values, null, null)
+            }
+            Log.i(TAG, "Successfully registered video to MediaStore: $uri")
+            return uri
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed writing to MediaStore URI", e)
+            return null
+        }
     }
 }

@@ -80,6 +80,17 @@ class EditorViewModel(
         updateUndoRedoStatus()
     }
 
+    fun loadProject(project: EditorProject) {
+        pause()
+        _project.value = project
+        _playheadUs.value = 0L
+        _selectedTrackId.value = null
+        _selectedClipId.value = null
+        undoRedoStack.clear()
+        undoRedoStack.push(project, "Project Loaded")
+        updateUndoRedoStatus()
+    }
+
     fun setPlayhead(timeUs: Long) {
         val total = _project.value.totalDurationUs.coerceAtLeast(1_000_000L)
         _playheadUs.value = timeUs.coerceIn(0L, total)
