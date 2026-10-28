@@ -55,6 +55,7 @@ gh run watch "$RUN_ID" --repo "$REPO" --exit-status
 
 echo "=== 5. Downloading Cloud Build Artifacts ==="
 mkdir -p "$ARTIFACTS_DIR"
+rm -f "$ARTIFACTS_DIR/app-debug.apk"
 gh run download "$RUN_ID" --repo "$REPO" --name "novacut-debug-apk" --dir "$ARTIFACTS_DIR"
 
 APK_PATH="$ARTIFACTS_DIR/app-debug.apk"
