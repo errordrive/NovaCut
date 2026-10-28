@@ -14,7 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.procut.model.CurvePoint
 import com.procut.model.SpeedConfig
+import com.procut.model.SpeedMode
 import com.procut.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,17 +26,23 @@ fun SpeedControlSheet(
     onSpeedConfigChange: (SpeedConfig) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedTab by remember { mutableStateOf(if (currentSpeedConfig.isCurve) 1 else 0) }
-    var normalMultiplier by remember { mutableStateOf(currentSpeedConfig.speedMultiplier) }
-    var keepPitch by remember { mutableStateOf(currentSpeedConfig.preservePitch) }
+    var selectedTab by remember { mutableStateOf(if (currentSpeedConfig.mode == SpeedMode.CURVE) 1 else 0) }
+    var normalMultiplier by remember { mutableStateOf(currentSpeedConfig.speedMultiplier.toFloat()) }
+    var keepPitch by remember { mutableStateOf(currentSpeedConfig.isPitchPreserved) }
 
     val presetCurves = listOf(
-        "Montage" to SpeedConfig.MONTAGE,
-        "Hero" to SpeedConfig.HERO,
-        "Bullet" to SpeedConfig.BULLET,
+        "Hero Montage" to SpeedConfig.MONTAGE_HERO,
+        "Bullet Time" to SpeedConfig.BULLET_CURVE,
         "Jump Cut" to SpeedConfig.JUMP_CUT,
-        "Flash In" to SpeedConfig.FLASH_IN,
-        "Flash Out" to SpeedConfig.FLASH_OUT
+        "Flash Ramp" to SpeedConfig(
+            mode = SpeedMode.CURVE,
+            curvePoints = listOf(
+                CurvePoint(0.0f, 4.0f),
+                CurvePoint(0.3f, 1.0f),
+                CurvePoint(0.7f, 1.0f),
+                CurvePoint(1.0f, 4.0f)
+            )
+        )
     )
 
     ModalBottomSheet(
@@ -96,7 +104,13 @@ fun SpeedControlSheet(
                     value = normalMultiplier,
                     onValueChange = {
                         normalMultiplier = it
-                        onSpeedConfigChange(SpeedConfig.constant(it, keepPitch))
+                        onSpeedConfigChange(
+                            SpeedConfig(
+                                mode = SpeedMode.CONSTANT,
+                                speedMultiplier = it.toDouble(),
+                                isPitchPreserved = keepPitch
+                            )
+                        )
                     },
                     valueRange = 0.1f..10.0f,
                     colors = SliderDefaults.colors(
@@ -115,7 +129,13 @@ fun SpeedControlSheet(
                         OutlinedButton(
                             onClick = {
                                 normalMultiplier = speed
-                                onSpeedConfigChange(SpeedConfig.constant(speed, keepPitch))
+                                onSpeedConfigChange(
+                                    SpeedConfig(
+                                        mode = SpeedMode.CONSTANT,
+                                        speedMultiplier = speed.toDouble(),
+                                        isPitchPreserved = keepPitch
+                                    )
+                                )
                             },
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                             colors = ButtonDefaults.outlinedButtonColors(
@@ -138,14 +158,14 @@ fun SpeedControlSheet(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    presetCurves.take(3).forEach { (name, curve) ->
+                    presetCurves.take(2).forEach { (name, curve) ->
                         Surface(
                             color = StudioDarkSurfaceVariant,
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(50.dp)
-                                .clickable { onSpeedConfigChange(curve) }
+                                .clickable { onSpeedConfigChange(curve.copy(isPitchPreserved = keepPitch)) }
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Text(text = name, color = StudioWhite, fontSize = 12.sp)
@@ -158,14 +178,14 @@ fun SpeedControlSheet(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    presetCurves.drop(3).forEach { (name, curve) ->
+                    presetCurves.drop(2).forEach { (name, curve) ->
                         Surface(
                             color = StudioDarkSurfaceVariant,
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(50.dp)
-                                .clickable { onSpeedConfigChange(curve) }
+                                .clickable { onSpeedConfigChange(curve.copy(isPitchPreserved = keepPitch)) }
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Text(text = name, color = StudioWhite, fontSize = 12.sp)
@@ -188,7 +208,7 @@ fun SpeedControlSheet(
                     checked = keepPitch,
                     onCheckedChange = {
                         keepPitch = it
-                        onSpeedConfigChange(currentSpeedConfig.copy(preservePitch = it))
+                        onSpeedConfigChange(currentSpeedConfig.copy(isPitchPreserved = it))
                     },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = StudioCyanAccent,
