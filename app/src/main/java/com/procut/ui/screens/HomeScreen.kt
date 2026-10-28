@@ -30,6 +30,7 @@ import com.procut.repository.FileDraftRepository
 import com.procut.ui.components.MediaPickerSheet
 import com.procut.ui.components.PickerMediaItem
 import com.procut.ui.theme.*
+import com.procut.ui.viewmodel.EditorViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -60,7 +61,7 @@ fun HomeScreen(
         val list = repository.listDrafts()
         if (list.isEmpty()) {
             // Seed initial demo project so user always has an active project
-            val demo = createDefaultDemoProject()
+            val demo = EditorViewModel.createDefaultDemoProject()
             repository.saveDraft(demo)
             drafts = repository.listDrafts()
         } else {
@@ -560,10 +561,10 @@ private fun createProjectFromSelectedMedia(selectedItems: List<PickerMediaItem>)
             MediaAsset(
                 id = assetId,
                 filePath = item.uriString,
-                mediaType = if (item.isVideo) MediaType.VIDEO else MediaType.IMAGE,
+                mimeType = if (item.isVideo) "video/mp4" else "image/jpeg",
                 durationUs = durationUs,
-                naturalWidth = 1080,
-                naturalHeight = 1920
+                width = 1080,
+                height = 1920
             )
         )
 
@@ -596,6 +597,6 @@ private fun createProjectFromSelectedMedia(selectedItems: List<PickerMediaItem>)
             height = 1920
         ),
         tracks = listOf(mainTrack),
-        mediaAssets = assets
+        assets = assets
     )
 }
