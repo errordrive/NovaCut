@@ -1,4 +1,4 @@
-name: NovaCut Android CI
+name: NovaCut / ProCut Android CI
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,8 +20,9 @@ concurrency:
 
 jobs:
   build:
-    name: Build & Verify NovaCut APK
+    name: Build & Verify Cloud APK
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout Repository
@@ -34,27 +35,13 @@ jobs:
           java-version: '21'
           cache: 'gradle'
 
-      - name: Accept Android Licenses
-        run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
       - name: Make Gradle Wrapper Executable
         run: chmod +x gradlew
 
-      - name: Run Core Test Suite (Standalone)
+      - name: Run Unit Tests & Assemble Debug APK
         run: |
-          echo "=== Executing NovaCut Standalone Test Suite ==="
-          bash scripts/build_and_test.sh
-
-      - name: Run Android Unit Tests (Gradle)
-        run: |
-          echo "=== Executing Gradle Unit Tests ==="
-          ./gradlew testDebugUnitTest --no-daemon --stacktrace
-
-      - name: Assemble Debug APK
-        run: |
-          echo "=== Assembling NovaCut Debug APK ==="
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          echo "=== Executing Cloud Build & Tests ==="
+          ./gradlew test assembleDebug --no-daemon --stacktrace
 
       - name: Verify APK Integrity
         run: |
@@ -69,6 +56,7 @@ jobs:
           fi
           echo "SUCCESS: Found valid APK: $APK_PATH"
           ls -lh "$APK_PATH"
+          sha256sum "$APK_PATH"
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
@@ -84,18 +72,6 @@ jobs:
         with:
           name: test-reports
           path: |
-            app/build/reports/tests/
-            tests/bin/
-          retention-days: 7
-          if-no-files-found: ignore
-
-      - name: Upload Build Logs on Failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gradle-build-logs
-          path: |
-            app/build/reports/
-            ~/.gradle/daemon/
+            **/build/reports/tests/
           retention-days: 7
           if-no-files-found: ignore

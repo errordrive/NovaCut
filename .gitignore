@@ -1,42 +1,12 @@
-# Built application files
-*.apk
-*.apks
-*.aab
-*.jar
-!gradle/wrapper/gradle-wrapper.jar
-
-# Gradle files
-.gradle/
-build/
-*/build/
-
-# Local configuration file (sdk path, etc)
-local.properties
-
-# Log files
-*.log
-
-# Android Studio / IntelliJ IDEA
-.idea/
-.idea/*
 *.iml
-.navigation/
-captures/
+.gradle/
+**/build/
+build/
+local.properties
+.idea/
+.DS_Store
+/captures
 .externalNativeBuild/
 .cxx/
-
-# Keystore files
-*.jks
-*.keystore
-
-# Google Services (if applicable)
-google-services.json
-
-# OS specific files
-.DS_Store
-Thumbs.db
-
-# CapCut Proprietary Material and Extracted Artifacts
-CapCut_19.8.0.apks
-extracted/
-tests/bin/
+.kotlin/
+*.apk
