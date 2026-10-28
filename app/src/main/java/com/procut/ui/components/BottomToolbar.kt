@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -24,6 +23,7 @@ sealed class ToolbarAction {
     // Root Actions
     object RootEdit : ToolbarAction()
     object RootAudio : ToolbarAction()
+    object RootVoiceover : ToolbarAction()
     object RootText : ToolbarAction()
     object RootStickers : ToolbarAction()
     object RootOverlay : ToolbarAction()
@@ -38,10 +38,14 @@ sealed class ToolbarAction {
     object ClipSplit : ToolbarAction()
     object ClipSpeed : ToolbarAction()
     object ClipAnimation : ToolbarAction()
-    object ClipDelete : ToolbarAction()
-    object ClipVolume : ToolbarAction()
-    object ClipTransform : ToolbarAction()
     object ClipKeyframe : ToolbarAction()
+    object ClipVolume : ToolbarAction()
+    object ClipDelete : ToolbarAction()
+    object ClipExtractAudio : ToolbarAction()
+    object ClipCopy : ToolbarAction()
+    object ClipReverse : ToolbarAction()
+    object ClipFreeze : ToolbarAction()
+    object ClipTransform : ToolbarAction()
     object ClipChromaKey : ToolbarAction()
     object ClipMask : ToolbarAction()
     object ClipFilter : ToolbarAction()
@@ -75,7 +79,8 @@ fun BottomToolbar(
                 // ROOT MODE ACTIONS
                 ToolbarItem(icon = Icons.Default.ContentCut, label = "Edit") { onAction(ToolbarAction.RootEdit) }
                 ToolbarItem(icon = Icons.Default.Audiotrack, label = "Audio") { onAction(ToolbarAction.RootAudio) }
-                ToolbarItem(icon = Icons.Default.TextFields, label = "Text") { onAction(ToolbarAction.RootText) }
+                ToolbarItem(icon = Icons.Default.Mic, label = "Voiceover", tint = Color(0xFFFF5252)) { onAction(ToolbarAction.RootVoiceover) }
+                ToolbarItem(icon = Icons.Default.TextFields, label = "Text", tint = StudioCyanAccent) { onAction(ToolbarAction.RootText) }
                 ToolbarItem(icon = Icons.Default.Mood, label = "Stickers") { onAction(ToolbarAction.RootStickers) }
                 ToolbarItem(icon = Icons.Default.Layers, label = "Overlay") { onAction(ToolbarAction.RootOverlay) }
                 ToolbarItem(icon = Icons.Default.AutoAwesome, label = "Effects") { onAction(ToolbarAction.RootEffects) }
@@ -84,15 +89,19 @@ fun BottomToolbar(
                 ToolbarItem(icon = Icons.Default.Palette, label = "Canvas") { onAction(ToolbarAction.RootCanvas) }
                 ToolbarItem(icon = Icons.Default.Tune, label = "Adjust") { onAction(ToolbarAction.RootAdjust) }
             } else {
-                // CLIP SELECTED MODE ACTIONS
+                // CLIP SELECTED MODE ACTIONS (16+ Pro Tools)
                 ToolbarItem(icon = Icons.Default.Close, label = "Close", tint = StudioGrey) { onAction(ToolbarAction.ClipDeselect) }
                 ToolbarItem(icon = Icons.Default.CallSplit, label = "Split", tint = StudioCyanAccent) { onAction(ToolbarAction.ClipSplit) }
                 ToolbarItem(icon = Icons.Default.Speed, label = "Speed") { onAction(ToolbarAction.ClipSpeed) }
-                ToolbarItem(icon = Icons.Default.Animation, label = "Animation") { onAction(ToolbarAction.ClipAnimation) }
-                ToolbarItem(icon = Icons.Default.Delete, label = "Delete", tint = Color(0xFFFF5252)) { onAction(ToolbarAction.ClipDelete) }
-                ToolbarItem(icon = Icons.Default.VolumeUp, label = "Volume") { onAction(ToolbarAction.ClipVolume) }
-                ToolbarItem(icon = Icons.Default.Transform, label = "Transform") { onAction(ToolbarAction.ClipTransform) }
+                ToolbarItem(icon = Icons.Default.VolumeUp, label = "Volume / Fade") { onAction(ToolbarAction.ClipVolume) }
                 ToolbarItem(icon = Icons.Default.Diamond, label = "Keyframe", tint = StudioKeyframeDiamond) { onAction(ToolbarAction.ClipKeyframe) }
+                ToolbarItem(icon = Icons.Default.Animation, label = "Animation") { onAction(ToolbarAction.ClipAnimation) }
+                ToolbarItem(icon = Icons.Default.Audiotrack, label = "Extract Audio") { onAction(ToolbarAction.ClipExtractAudio) }
+                ToolbarItem(icon = Icons.Default.ContentCopy, label = "Duplicate") { onAction(ToolbarAction.ClipCopy) }
+                ToolbarItem(icon = Icons.Default.Delete, label = "Delete", tint = Color(0xFFFF5252)) { onAction(ToolbarAction.ClipDelete) }
+                ToolbarItem(icon = Icons.Default.FastRewind, label = "Reverse") { onAction(ToolbarAction.ClipReverse) }
+                ToolbarItem(icon = Icons.Default.AcUnit, label = "Freeze") { onAction(ToolbarAction.ClipFreeze) }
+                ToolbarItem(icon = Icons.Default.Transform, label = "Transform") { onAction(ToolbarAction.ClipTransform) }
                 ToolbarItem(icon = Icons.Default.ColorLens, label = "Chroma") { onAction(ToolbarAction.ClipChromaKey) }
                 ToolbarItem(icon = Icons.Default.Crop, label = "Mask") { onAction(ToolbarAction.ClipMask) }
                 ToolbarItem(icon = Icons.Default.FilterVintage, label = "Filter") { onAction(ToolbarAction.ClipFilter) }

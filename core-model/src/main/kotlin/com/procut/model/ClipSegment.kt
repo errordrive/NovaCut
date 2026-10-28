@@ -19,7 +19,9 @@ data class ClipSegment(
     val chromaKeyConfig: ChromaKeyConfig = ChromaKeyConfig.DISABLED,
     val transitionIn: Transition? = null,
     val isReversed: Boolean = false,
-    val isMuted: Boolean = false
+    val isMuted: Boolean = false,
+    val audioConfig: AudioConfig = AudioConfig(),
+    val textConfig: TextConfig? = null
 ) {
     init {
         require(volume >= 0.0f) { "Clip volume must be non-negative: $volume" }
@@ -56,8 +58,11 @@ data class ClipSegment(
 
     fun evaluateVolumeAt(offsetUs: Long): Float {
         if (isMuted) return 0f
+        val baseVol = volume * audioConfig.volume
+        val fadeGain = audioConfig.fade.computeGain(offsetUs, targetTimeRangeUs.durationUs)
         val volKeyframes = keyframes.filter { it.property == KeyframeProperty.VOLUME }.sortedBy { it.timeOffsetUs }
-        return interpolateProperty(volKeyframes, offsetUs, volume).coerceAtLeast(0f)
+        val kfVol = interpolateProperty(volKeyframes, offsetUs, baseVol).coerceAtLeast(0f)
+        return (kfVol * fadeGain).coerceIn(0f, 2.0f)
     }
 
     private fun interpolateProperty(keyframes: List<Keyframe>, offsetUs: Long, defaultValue: Float): Float {

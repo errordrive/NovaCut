@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.procut.model.KeyframeProperty
+import com.procut.model.TextConfig
 import com.procut.model.TrackType
 import com.procut.ui.components.*
 import com.procut.ui.theme.StudioDarkBackground
@@ -29,6 +30,10 @@ fun EditorScreen(
 
     var isFullscreenPreview by remember { mutableStateOf(false) }
     var showAspectRatioSheet by remember { mutableStateOf(false) }
+    var showVolumeFadeSheet by remember { mutableStateOf(false) }
+    var showSpeedSheet by remember { mutableStateOf(false) }
+    var showTextSheet by remember { mutableStateOf(false) }
+    var showVoiceoverDialog by remember { mutableStateOf(false) }
     var transitionTargetClipId by remember { mutableStateOf<String?>(null) }
 
     val selectedClip = viewModel.getSelectedClip()
@@ -52,7 +57,7 @@ fun EditorScreen(
                 onRedoClick = { viewModel.redo() },
                 onFullscreenToggle = { isFullscreenPreview = !isFullscreenPreview },
                 onExportClick = {
-                    // Export dialog or notification
+                    // Export dialog / trigger
                 }
             )
         },
@@ -64,9 +69,20 @@ fun EditorScreen(
                         when (action) {
                             ToolbarAction.ClipDeselect -> viewModel.selectClip(null, null)
                             ToolbarAction.ClipSplit -> viewModel.splitSelectedClip()
+                            ToolbarAction.ClipSpeed -> showSpeedSheet = true
+                            ToolbarAction.ClipVolume -> showVolumeFadeSheet = true
                             ToolbarAction.ClipDelete -> viewModel.deleteSelectedClip()
                             ToolbarAction.ClipKeyframe -> viewModel.toggleKeyframeAtPlayhead(KeyframeProperty.POSITION_X)
+                            ToolbarAction.ClipExtractAudio -> viewModel.extractAudioFromClip()
+                            ToolbarAction.ClipCopy -> viewModel.duplicateSelectedClip()
+                            ToolbarAction.ClipAnimation -> showTextSheet = (selectedClip?.textConfig != null)
                             ToolbarAction.RootAspectRatio -> showAspectRatioSheet = true
+                            ToolbarAction.RootAudio -> showVolumeFadeSheet = true
+                            ToolbarAction.RootVoiceover -> showVoiceoverDialog = true
+                            ToolbarAction.RootText -> {
+                                viewModel.addTextClip()
+                                showTextSheet = true
+                            }
                             else -> Unit
                         }
                     }
@@ -136,6 +152,43 @@ fun EditorScreen(
         )
     }
 
+    if (showVolumeFadeSheet && selectedClip != null) {
+        AudioVolumeFadeSheet(
+            currentConfig = selectedClip.audioConfig,
+            clipDurationUs = selectedClip.targetTimeRangeUs.durationUs,
+            onConfigChange = { viewModel.updateAudioConfig(it) },
+            onDetectBeats = { viewModel.detectBeatsForSelectedClip() },
+            onDismiss = { showVolumeFadeSheet = false }
+        )
+    }
+
+    if (showSpeedSheet && selectedClip != null) {
+        SpeedControlSheet(
+            currentSpeedConfig = selectedClip.speedConfig,
+            onSpeedConfigChange = { viewModel.updateSpeedConfig(it) },
+            onDismiss = { showSpeedSheet = false }
+        )
+    }
+
+    if (showTextSheet) {
+        val currentTextConfig = selectedClip?.textConfig ?: TextConfig()
+        TextEditorSheet(
+            currentConfig = currentTextConfig,
+            onConfigChange = { viewModel.updateTextConfig(it) },
+            onDismiss = { showTextSheet = false }
+        )
+    }
+
+    if (showVoiceoverDialog) {
+        VoiceoverRecorderDialog(
+            onRecordFinished = { durationUs ->
+                viewModel.addVoiceoverClip(durationUs)
+                showVoiceoverDialog = false
+            },
+            onDismiss = { showVoiceoverDialog = false }
+        )
+    }
+
     if (transitionTargetClipId != null) {
         val targetClip = project.tracks
             .firstOrNull { it.type == TrackType.MAIN_VIDEO }
@@ -145,7 +198,6 @@ fun EditorScreen(
         TransitionPickerDialog(
             currentTransition = targetClip?.transitionIn,
             onTransitionSelected = { _ ->
-                // Apply transition update
                 transitionTargetClipId = null
             },
             onDismiss = { transitionTargetClipId = null }

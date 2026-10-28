@@ -163,6 +163,52 @@ fun TimelineTrackView(
                     }
                 }
 
+                // 3b. Yellow Beat Markers (Audio Rhythm Onsets)
+                if (clip.audioConfig.beatMarkers.isNotEmpty()) {
+                    clip.audioConfig.beatMarkers.forEach { beat ->
+                        val beatOffsetUs = beat.timeUs - clip.sourceTimeRangeUs.startUs
+                        if (beatOffsetUs in 0L..clip.targetTimeRangeUs.durationUs) {
+                            val beatOffsetDp = (beatOffsetUs * zoomScaleDpPerUs).dp
+                            Box(
+                                modifier = Modifier
+                                    .offset(x = beatOffsetDp - 2.dp)
+                                    .width(4.dp)
+                                    .fillMaxHeight()
+                                    .background(Color(0xFFFFD600).copy(alpha = 0.85f))
+                            )
+                        }
+                    }
+                }
+
+                // 3c. Visual Fade In / Fade Out Curves (Audio Clips)
+                if (clip.audioConfig.fade.fadeInDurationUs > 0L) {
+                    val fadeInWidthDp = (clip.audioConfig.fade.fadeInDurationUs * zoomScaleDpPerUs).dp
+                    Canvas(modifier = Modifier.width(fadeInWidthDp).fillMaxHeight()) {
+                        drawLine(
+                            color = StudioCyanAccent.copy(alpha = 0.9f),
+                            start = Offset(0f, size.height),
+                            end = Offset(size.width, 0f),
+                            strokeWidth = 2.5f
+                        )
+                    }
+                }
+                if (clip.audioConfig.fade.fadeOutDurationUs > 0L) {
+                    val fadeOutWidthDp = (clip.audioConfig.fade.fadeOutDurationUs * zoomScaleDpPerUs).dp
+                    Canvas(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .width(fadeOutWidthDp)
+                            .fillMaxHeight()
+                    ) {
+                        drawLine(
+                            color = StudioCyanAccent.copy(alpha = 0.9f),
+                            start = Offset(0f, 0f),
+                            end = Offset(size.width, size.height),
+                            strokeWidth = 2.5f
+                        )
+                    }
+                }
+
                 // 4. Trim Handles when selected
                 if (isSelected) {
                     // Left Trim Handle (<)

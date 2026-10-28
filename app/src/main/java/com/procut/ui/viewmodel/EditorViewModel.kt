@@ -240,6 +240,177 @@ class EditorViewModel(
         _exportConfig.value = _exportConfig.value.copy(resolution = res)
     }
 
+    fun updateAudioConfig(audioConfig: AudioConfig) {
+        val trackId = _selectedTrackId.value ?: return
+        val clipId = _selectedClipId.value ?: return
+
+        val proj = _project.value
+        val updatedTracks = proj.tracks.map { track ->
+            if (track.id == trackId) {
+                track.copy(clips = track.clips.map { clip ->
+                    if (clip.id == clipId) clip.copy(audioConfig = audioConfig) else clip
+                })
+            } else track
+        }
+        recordMutation(proj.copy(tracks = updatedTracks), "Update Audio Settings")
+    }
+
+    fun updateSpeedConfig(speedConfig: SpeedConfig) {
+        val trackId = _selectedTrackId.value ?: return
+        val clipId = _selectedClipId.value ?: return
+
+        val proj = _project.value
+        val updatedTracks = proj.tracks.map { track ->
+            if (track.id == trackId) {
+                track.copy(clips = track.clips.map { clip ->
+                    if (clip.id == clipId) {
+                        val newTargetDur = speedConfig.computeTargetDurationUs(clip.sourceTimeRangeUs.durationUs)
+                        clip.copy(
+                            speedConfig = speedConfig,
+                            targetTimeRangeUs = clip.targetTimeRangeUs.copy(durationUs = newTargetDur)
+                        )
+                    } else clip
+                })
+            } else track
+        }
+        recordMutation(proj.copy(tracks = updatedTracks), "Update Clip Speed")
+    }
+
+    fun updateTextConfig(textConfig: TextConfig) {
+        val trackId = _selectedTrackId.value ?: return
+        val clipId = _selectedClipId.value ?: return
+
+        val proj = _project.value
+        val updatedTracks = proj.tracks.map { track ->
+            if (track.id == trackId) {
+                track.copy(clips = track.clips.map { clip ->
+                    if (clip.id == clipId) clip.copy(textConfig = textConfig) else clip
+                })
+            } else track
+        }
+        recordMutation(proj.copy(tracks = updatedTracks), "Update Text Settings")
+    }
+
+    fun extractAudioFromClip() {
+        val trackId = _selectedTrackId.value ?: return
+        val clipId = _selectedClipId.value ?: return
+        val clip = getSelectedClip() ?: return
+
+        val proj = _project.value
+        val audioTrack = proj.tracks.firstOrNull { it.type == TrackType.AUDIO }
+        val newAudioClip = ClipSegment(
+            id = UUID.randomUUID().toString(),
+            assetId = clip.assetId,
+            name = "Audio - ${clip.name}",
+            sourceTimeRangeUs = clip.sourceTimeRangeUs,
+            targetTimeRangeUs = clip.targetTimeRangeUs
+        )
+
+        val updatedTracks = if (audioTrack != null) {
+            proj.tracks.map { t ->
+                if (t.id == audioTrack.id) t.copy(clips = t.clips + newAudioClip) else t
+            }
+        } else {
+            val newTrack = Track(
+                id = UUID.randomUUID().toString(),
+                type = TrackType.AUDIO,
+                name = "Extracted Audio",
+                clips = listOf(newAudioClip)
+            )
+            proj.tracks + newTrack
+        }
+
+        recordMutation(proj.copy(tracks = updatedTracks), "Extract Audio")
+    }
+
+    fun detectBeatsForSelectedClip() {
+        val clip = getSelectedClip() ?: return
+        val waveform = com.procut.ui.media.WaveformProvider.getWaveform(clip.assetId, clip.sourceTimeRangeUs.durationUs)
+        val detectedBeats = com.procut.audio.BeatDetector.detectBeats(waveform)
+        updateAudioConfig(clip.audioConfig.copy(beatMarkers = detectedBeats))
+    }
+
+    fun addVoiceoverClip(durationUs: Long) {
+        val proj = _project.value
+        val playhead = _playheadUs.value
+        val newVoiceClip = ClipSegment(
+            id = UUID.randomUUID().toString(),
+            assetId = "voiceover_${System.currentTimeMillis()}",
+            name = "Voiceover",
+            sourceTimeRangeUs = TimeRangeUs(0L, durationUs),
+            targetTimeRangeUs = TimeRangeUs(playhead, durationUs)
+        )
+
+        val audioTrack = proj.tracks.firstOrNull { it.type == TrackType.AUDIO }
+        val updatedTracks = if (audioTrack != null) {
+            proj.tracks.map { t ->
+                if (t.id == audioTrack.id) t.copy(clips = t.clips + newVoiceClip) else t
+            }
+        } else {
+            val newTrack = Track(
+                id = UUID.randomUUID().toString(),
+                type = TrackType.AUDIO,
+                name = "Voiceover Track",
+                clips = listOf(newVoiceClip)
+            )
+            proj.tracks + newTrack
+        }
+
+        recordMutation(proj.copy(tracks = updatedTracks), "Add Voiceover")
+    }
+
+    fun addTextClip() {
+        val proj = _project.value
+        val playhead = _playheadUs.value
+        val durationUs = 3_000_000L
+        val textClip = ClipSegment(
+            id = UUID.randomUUID().toString(),
+            assetId = "text_${System.currentTimeMillis()}",
+            name = "Text Title",
+            sourceTimeRangeUs = TimeRangeUs(0L, durationUs),
+            targetTimeRangeUs = TimeRangeUs(playhead, durationUs),
+            textConfig = TextConfig()
+        )
+
+        val textTrack = proj.tracks.firstOrNull { it.type == TrackType.TEXT }
+        val updatedTracks = if (textTrack != null) {
+            proj.tracks.map { t ->
+                if (t.id == textTrack.id) t.copy(clips = t.clips + textClip) else t
+            }
+        } else {
+            val newTrack = Track(
+                id = UUID.randomUUID().toString(),
+                type = TrackType.TEXT,
+                name = "Text Track",
+                clips = listOf(textClip)
+            )
+            proj.tracks + newTrack
+        }
+
+        recordMutation(proj.copy(tracks = updatedTracks), "Add Text")
+    }
+
+    fun duplicateSelectedClip() {
+        val trackId = _selectedTrackId.value ?: return
+        val clip = getSelectedClip() ?: return
+
+        val proj = _project.value
+        val newClip = clip.copy(
+            id = UUID.randomUUID().toString(),
+            name = "${clip.name} (Copy)",
+            targetTimeRangeUs = clip.targetTimeRangeUs.copy(
+                startUs = clip.targetTimeRangeUs.endUs
+            )
+        )
+
+        val updatedTracks = proj.tracks.map { track ->
+            if (track.id == trackId) {
+                track.copy(clips = track.clips + newClip)
+            } else track
+        }
+        recordMutation(proj.copy(tracks = updatedTracks), "Duplicate Clip")
+    }
+
     fun updateFps(fps: Int) {
         _exportConfig.value = _exportConfig.value.copy(frameRate = fps)
     }
