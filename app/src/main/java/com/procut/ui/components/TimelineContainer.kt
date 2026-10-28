@@ -36,7 +36,8 @@ fun TimelineContainer(
     onPlayheadChange: (Long) -> Unit,
     onZoomScaleChange: (Float) -> Unit,
     onClipSelect: (String, String) -> Unit,
-    onClipTrim: (String, String, Long, Long) -> Unit,
+    onClipTrimStart: (String, String, Long) -> Unit,
+    onClipTrimEnd: (String, String, Long) -> Unit,
     onTransitionClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -128,8 +129,11 @@ fun TimelineContainer(
                                 playheadUs = playheadUs,
                                 zoomScaleDpPerUs = zoomScaleDpPerUs,
                                 onClipSelect = { clipId -> onClipSelect(track.id, clipId) },
-                                onClipTrim = { clipId, startUs, durUs ->
-                                    onClipTrim(track.id, clipId, startUs, durUs)
+                                onClipTrimStart = { clipId, startUs ->
+                                    onClipTrimStart(track.id, clipId, startUs)
+                                },
+                                onClipTrimEnd = { clipId, endUs ->
+                                    onClipTrimEnd(track.id, clipId, endUs)
                                 },
                                 onTransitionClick = onTransitionClick
                             )

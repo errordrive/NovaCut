@@ -64,7 +64,7 @@ class EditorViewModel(
 
     init {
         // Record initial state in undo stack
-        undoRedoStack.pushSnapshot(_project.value, "Initial State")
+        undoRedoStack.push(_project.value, "Initial State")
         updateUndoRedoStatus()
     }
 
@@ -125,22 +125,39 @@ class EditorViewModel(
         val clipId = _selectedClipId.value ?: return false
         val tUs = _playheadUs.value
 
-        val (newProj, leftId, rightId) = engine.splitClip(_project.value, trackId, clipId, tUs)
-        if (leftId != null && rightId != null) {
+        return try {
+            val newProj = engine.splitClip(_project.value, trackId, clipId, tUs)
             recordMutation(newProj, "Split Clip")
-            _selectedClipId.value = rightId
-            return true
+            true
+        } catch (e: Exception) {
+            false
         }
-        return false
     }
 
-    fun trimSelectedClip(newSourceStartUs: Long, newDurationUs: Long): Boolean {
+    fun trimSelectedClipStart(newTargetStartUs: Long): Boolean {
         val trackId = _selectedTrackId.value ?: return false
         val clipId = _selectedClipId.value ?: return false
 
-        val newProj = engine.trimClip(_project.value, trackId, clipId, newSourceStartUs, newDurationUs)
-        recordMutation(newProj, "Trim Clip")
-        return true
+        return try {
+            val newProj = engine.trimClipStart(_project.value, trackId, clipId, newTargetStartUs)
+            recordMutation(newProj, "Trim Clip Start")
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun trimSelectedClipEnd(newTargetEndUs: Long): Boolean {
+        val trackId = _selectedTrackId.value ?: return false
+        val clipId = _selectedClipId.value ?: return false
+
+        return try {
+            val newProj = engine.trimClipEnd(_project.value, trackId, clipId, newTargetEndUs)
+            recordMutation(newProj, "Trim Clip End")
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     fun deleteSelectedClip(): Boolean {
@@ -239,15 +256,15 @@ class EditorViewModel(
     }
 
     fun undo(): Boolean {
-        val restored = undoRedoStack.undo(_project.value) ?: return false
-        _project.value = restored
+        val result = undoRedoStack.undo(_project.value) ?: return false
+        _project.value = result.first
         updateUndoRedoStatus()
         return true
     }
 
     fun redo(): Boolean {
-        val restored = undoRedoStack.redo(_project.value) ?: return false
-        _project.value = restored
+        val result = undoRedoStack.redo(_project.value) ?: return false
+        _project.value = result.first
         updateUndoRedoStatus()
         return true
     }
@@ -262,14 +279,14 @@ class EditorViewModel(
     }
 
     private fun recordMutation(newProject: EditorProject, actionLabel: String) {
-        undoRedoStack.pushSnapshot(newProject, actionLabel)
+        undoRedoStack.push(newProject, actionLabel)
         _project.value = newProject
         updateUndoRedoStatus()
     }
 
     private fun updateUndoRedoStatus() {
-        _canUndo.value = undoRedoStack.canUndo()
-        _canRedo.value = undoRedoStack.canRedo()
+        _canUndo.value = undoRedoStack.canUndo
+        _canRedo.value = undoRedoStack.canRedo
     }
 
     companion object {
@@ -277,50 +294,50 @@ class EditorViewModel(
             val mainClip1 = ClipSegment(
                 id = "clip_main_1",
                 assetId = "asset_video_1",
+                name = "Intro Scene.mp4",
                 sourceTimeRangeUs = TimeRangeUs(0L, 5_000_000L),
-                targetTimeRangeUs = TimeRangeUs(0L, 5_000_000L),
-                name = "Intro Scene.mp4"
+                targetTimeRangeUs = TimeRangeUs(0L, 5_000_000L)
             )
             val mainClip2 = ClipSegment(
                 id = "clip_main_2",
                 assetId = "asset_video_2",
+                name = "City Action.mp4",
                 sourceTimeRangeUs = TimeRangeUs(0L, 7_000_000L),
                 targetTimeRangeUs = TimeRangeUs(5_000_000L, 7_000_000L),
-                name = "City Action.mp4",
                 transitionIn = Transition(type = TransitionType.DISSOLVE, durationUs = 500_000L)
             )
             val mainClip3 = ClipSegment(
                 id = "clip_main_3",
                 assetId = "asset_video_3",
+                name = "Outro Sunset.mp4",
                 sourceTimeRangeUs = TimeRangeUs(0L, 4_000_000L),
                 targetTimeRangeUs = TimeRangeUs(12_000_000L, 4_000_000L),
-                name = "Outro Sunset.mp4",
                 transitionIn = Transition(type = TransitionType.GLITCH, durationUs = 600_000L)
             )
 
             val pipClip1 = ClipSegment(
                 id = "clip_pip_1",
                 assetId = "asset_pip_1",
+                name = "Reaction Facecam.mp4",
                 sourceTimeRangeUs = TimeRangeUs(0L, 4_000_000L),
                 targetTimeRangeUs = TimeRangeUs(2_000_000L, 4_000_000L),
-                name = "Reaction Facecam.mp4",
                 transform = Transform2D(translationX = 0.35f, translationY = -0.35f, scaleX = 0.35f, scaleY = 0.35f)
             )
 
             val audioClip1 = ClipSegment(
                 id = "clip_audio_1",
                 assetId = "asset_audio_1",
+                name = "Cinematic Beat.mp3",
                 sourceTimeRangeUs = TimeRangeUs(0L, 16_000_000L),
-                targetTimeRangeUs = TimeRangeUs(0L, 16_000_000L),
-                name = "Cinematic Beat.mp3"
+                targetTimeRangeUs = TimeRangeUs(0L, 16_000_000L)
             )
 
             val textClip1 = ClipSegment(
                 id = "clip_text_1",
                 assetId = "asset_text_1",
+                name = "Pro Studio Title",
                 sourceTimeRangeUs = TimeRangeUs(0L, 3_000_000L),
-                targetTimeRangeUs = TimeRangeUs(1_000_000L, 3_000_000L),
-                name = "Pro Studio Title"
+                targetTimeRangeUs = TimeRangeUs(1_000_000L, 3_000_000L)
             )
 
             return EditorProject(

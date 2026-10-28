@@ -67,6 +67,7 @@ fun AspectRatioSelectorSheet(
                             AspectRatio.RATIO_1_1 -> 32.dp
                             AspectRatio.RATIO_4_5 -> 28.dp
                             AspectRatio.RATIO_2_35_1 -> 48.dp
+                            else -> 32.dp
                         }
                         val boxH = when (ratio) {
                             AspectRatio.RATIO_9_16 -> 42.dp
@@ -74,6 +75,7 @@ fun AspectRatioSelectorSheet(
                             AspectRatio.RATIO_1_1 -> 32.dp
                             AspectRatio.RATIO_4_5 -> 35.dp
                             AspectRatio.RATIO_2_35_1 -> 20.dp
+                            else -> 32.dp
                         }
 
                         Box(

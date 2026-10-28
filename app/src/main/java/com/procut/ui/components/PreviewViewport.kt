@@ -54,19 +54,21 @@ fun PreviewViewport(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             contentAlignment = Alignment.Center
         ) {
-            val containerW = maxWidth
-            val containerH = maxHeight
+            val containerW = maxWidth.value
+            val containerH = maxHeight.value
 
-            val targetRatio = canvasConfig.aspectRatio.ratio
-            val containerRatio = containerW.value / containerH.value
+            val targetRatio = canvasConfig.aspectRatio.floatRatio
+            val containerRatio = containerW / containerH
 
-            val (surfaceW, surfaceH) = if (containerRatio > targetRatio) {
+            val (surfaceWVal, surfaceHVal) = if (containerRatio > targetRatio) {
                 // Pillarbox: container is wider than canvas
                 (containerH * targetRatio) to containerH
             } else {
                 // Letterbox: container is taller than canvas
                 containerW to (containerW / targetRatio)
             }
+            val surfaceW = surfaceWVal.dp
+            val surfaceH = surfaceHVal.dp
 
             // The actual canvas container
             Box(

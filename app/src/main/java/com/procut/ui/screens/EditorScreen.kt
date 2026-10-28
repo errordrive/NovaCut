@@ -110,8 +110,11 @@ fun EditorScreen(
                     onPlayheadChange = { viewModel.setPlayhead(it) },
                     onZoomScaleChange = { viewModel.setZoomScale(it) },
                     onClipSelect = { trackId, clipId -> viewModel.selectClip(trackId, clipId) },
-                    onClipTrim = { trackId, clipId, startUs, durUs ->
-                        viewModel.trimSelectedClip(startUs, durUs)
+                    onClipTrimStart = { trackId, clipId, startUs ->
+                        viewModel.trimSelectedClipStart(startUs)
+                    },
+                    onClipTrimEnd = { trackId, clipId, endUs ->
+                        viewModel.trimSelectedClipEnd(endUs)
                     },
                     onTransitionClick = { clipId ->
                         transitionTargetClipId = clipId

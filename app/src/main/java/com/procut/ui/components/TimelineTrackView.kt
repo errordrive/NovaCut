@@ -48,7 +48,8 @@ fun TimelineTrackView(
     playheadUs: Long,
     zoomScaleDpPerUs: Float,
     onClipSelect: (String) -> Unit,
-    onClipTrim: (String, Long, Long) -> Unit,
+    onClipTrimStart: (String, Long) -> Unit,
+    onClipTrimEnd: (String, Long) -> Unit,
     onTransitionClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -175,21 +176,14 @@ fun TimelineTrackView(
                                 detectHorizontalDragGestures { change, dragAmount ->
                                     change.consume()
                                     val deltaUs = (dragAmount / (zoomScaleDpPerUs * density.density)).roundToLong()
-                                    var newStartUs = clip.sourceTimeRangeUs.startUs + deltaUs
-                                    var newDurationUs = clip.targetTimeRangeUs.durationUs - deltaUs
+                                    var targetStartUs = clip.targetTimeRangeUs.startUs + deltaUs
 
-                                    // Minimum duration clamp (100 ms)
-                                    if (newDurationUs >= 100_000L && newStartUs >= 0L) {
-                                        // Magnetic snap to playhead (100 ms threshold)
-                                        val targetAbsoluteStart = clip.targetTimeRangeUs.startUs + deltaUs
-                                        if (abs(targetAbsoluteStart - playheadUs) < 100_000L) {
-                                            val snapDelta = playheadUs - clip.targetTimeRangeUs.startUs
-                                            newStartUs = clip.sourceTimeRangeUs.startUs + snapDelta
-                                            newDurationUs = clip.targetTimeRangeUs.durationUs - snapDelta
-                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                        }
-                                        onClipTrim(clip.id, newStartUs, newDurationUs)
+                                    // Magnetic snap to playhead (100 ms threshold)
+                                    if (abs(targetStartUs - playheadUs) < 100_000L) {
+                                        targetStartUs = playheadUs
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     }
+                                    onClipTrimStart(clip.id, targetStartUs)
                                 }
                             },
                         contentAlignment = Alignment.Center
@@ -215,17 +209,14 @@ fun TimelineTrackView(
                                 detectHorizontalDragGestures { change, dragAmount ->
                                     change.consume()
                                     val deltaUs = (dragAmount / (zoomScaleDpPerUs * density.density)).roundToLong()
-                                    var newDurationUs = clip.targetTimeRangeUs.durationUs + deltaUs
+                                    var targetEndUs = clip.targetTimeRangeUs.endUs + deltaUs
 
-                                    if (newDurationUs >= 100_000L) {
-                                        // Magnetic snap to playhead (100 ms threshold)
-                                        val targetEndUs = clip.targetTimeRangeUs.startUs + newDurationUs
-                                        if (abs(targetEndUs - playheadUs) < 100_000L) {
-                                            newDurationUs = playheadUs - clip.targetTimeRangeUs.startUs
-                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                        }
-                                        onClipTrim(clip.id, clip.sourceTimeRangeUs.startUs, newDurationUs)
+                                    // Magnetic snap to playhead (100 ms threshold)
+                                    if (abs(targetEndUs - playheadUs) < 100_000L) {
+                                        targetEndUs = playheadUs
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     }
+                                    onClipTrimEnd(clip.id, targetEndUs)
                                 }
                             },
                         contentAlignment = Alignment.Center
