@@ -28,6 +28,12 @@ val StudioGuideLine = Color(0xFF2979FF)
 val StudioKeyframeDiamond = Color(0xFFFFAB00)
 val StudioTransitionBadge = Color(0xFF3B82F6)
 
+// Color aliases for sheets & dialogs
+val StudioAccentYellow = StudioKeyframeDiamond
+val StudioDarkBg = StudioDarkBackground
+val StudioTextSecondary = StudioGrey
+val StudioBorder = StudioDarkGrey
+
 private val DarkColorScheme = darkColorScheme(
     primary = StudioCyanAccent,
     background = StudioDarkBackground,

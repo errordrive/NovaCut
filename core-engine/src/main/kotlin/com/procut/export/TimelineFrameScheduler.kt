@@ -25,7 +25,7 @@ class TimelineFrameScheduler(
     val totalFrames: Int = if (durationUs <= 0L) {
         0
     } else {
-        ((durationUs + frameDurationUs - 1) / frameDurationUs).toInt()
+        kotlin.math.ceil((durationUs.toDouble() * frameRate.toDouble()) / 1_000_000.0).toInt()
     }
 
     /**

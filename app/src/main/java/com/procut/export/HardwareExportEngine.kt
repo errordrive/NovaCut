@@ -49,7 +49,7 @@ class HardwareExportEngine(
     ): File = withContext(Dispatchers.Default) {
         val (targetWidth, targetHeight) = config.calculateOutputDimensions(project.canvasConfig.aspectRatio)
         val scheduler = TimelineFrameScheduler(project.totalDurationUs, config.frameRate)
-        val compositor = CompositorPipeline(project)
+        val compositor = CompositorPipeline()
 
         Log.i(TAG, "Starting Hardware Export: ${targetWidth}x${targetHeight} @ ${config.frameRate}fps, " +
                 "bitrate=${config.effectiveVideoBitrateBps}bps, totalFrames=${scheduler.totalFrames}, out=${outputFile.absolutePath}")
@@ -145,7 +145,11 @@ class HardwareExportEngine(
                 }
 
                 val playheadUs = scheduler.getFrameTimeUs(frameIndex)
-                val compositionFrame = compositor.buildFrame(playheadUs, targetWidth, targetHeight)
+                val compositionFrame = compositor.buildCompositionFrame(
+                    project = project,
+                    playheadUs = playheadUs,
+                    resolvedTextures = emptyMap()
+                )
 
                 // Render offscreen frame
                 renderComposition(compositionFrame, solidProgram, vertexBuffer, targetWidth, targetHeight)
