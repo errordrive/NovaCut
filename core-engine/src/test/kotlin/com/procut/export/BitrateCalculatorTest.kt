@@ -52,7 +52,8 @@ class BitrateCalculatorTest {
         )
 
         // HEVC should be ~65% of H.264
-        val expectedHevc = (12_000_000L * 0.65f).toInt()
+        val expectedHevc = (12_000_000L * 0.65f).let { kotlin.math.roundToInt(it) }
+        assertEquals(7_800_000, hevcBitrate)
         assertEquals(expectedHevc, hevcBitrate)
         assertTrue("HEVC must achieve smaller bitrate than H264", hevcBitrate < h264Bitrate)
     }
