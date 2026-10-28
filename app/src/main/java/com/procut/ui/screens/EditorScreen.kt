@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.procut.model.KeyframeProperty
 import com.procut.model.TextConfig
@@ -28,6 +29,14 @@ fun EditorScreen(
     val canUndo by viewModel.canUndo.collectAsState()
     val canRedo by viewModel.canRedo.collectAsState()
 
+    val showExportSettings by viewModel.showExportSettings.collectAsState()
+    val showExportProgress by viewModel.showExportProgress.collectAsState()
+    val isExporting by viewModel.isExporting.collectAsState()
+    val exportProgress by viewModel.exportProgress.collectAsState()
+    val exportResultFile by viewModel.exportResultFile.collectAsState()
+    val exportErrorMessage by viewModel.exportErrorMessage.collectAsState()
+
+    val context = LocalContext.current
     var isFullscreenPreview by remember { mutableStateOf(false) }
     var showAspectRatioSheet by remember { mutableStateOf(false) }
     var showVolumeFadeSheet by remember { mutableStateOf(false) }
@@ -57,7 +66,7 @@ fun EditorScreen(
                 onRedoClick = { viewModel.redo() },
                 onFullscreenToggle = { isFullscreenPreview = !isFullscreenPreview },
                 onExportClick = {
-                    // Export dialog / trigger
+                    viewModel.openExportSettings()
                 }
             )
         },
@@ -201,6 +210,41 @@ fun EditorScreen(
                 transitionTargetClipId = null
             },
             onDismiss = { transitionTargetClipId = null }
+        )
+    }
+
+    if (showExportSettings) {
+        ExportSettingsSheet(
+            initialConfig = exportConfig,
+            durationUs = project.totalDurationUs,
+            aspectRatio = project.canvasConfig.aspectRatio,
+            onDismiss = { viewModel.closeExportSettings() },
+            onStartExport = { config ->
+                viewModel.startExport(context, config)
+            }
+        )
+    }
+
+    if (showExportProgress) {
+        ExportProgressDialog(
+            isExporting = isExporting,
+            progress = exportProgress,
+            resultFile = exportResultFile,
+            errorMessage = exportErrorMessage,
+            onCancel = { viewModel.cancelExport() },
+            onDismiss = { viewModel.dismissExportDialog() },
+            onShare = { file ->
+                val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                    type = "video/mp4"
+                    putExtra(android.content.Intent.EXTRA_STREAM, androidx.core.content.FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.fileprovider",
+                        file
+                    ))
+                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(android.content.Intent.createChooser(intent, "Share Video"))
+            }
         )
     }
 }

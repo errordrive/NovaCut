@@ -1,28 +1,20 @@
 package com.procut.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.procut.engine.KeyframeEvaluator
 import com.procut.engine.TimelineEngine
+import com.procut.export.ExportProgress
+import com.procut.export.HardwareExportEngine
 import com.procut.history.UndoRedoStack
 import com.procut.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.io.File
 import java.util.UUID
-
-enum class ExportResolution(val label: String, val width: Int, val height: Int) {
-    RES_720P("720p", 1280, 720),
-    RES_1080P("1080p", 1920, 1080),
-    RES_2K("2K", 2560, 1440),
-    RES_4K("4K", 3840, 2160)
-}
-
-data class ExportConfig(
-    val resolution: ExportResolution = ExportResolution.RES_1080P,
-    val frameRate: Int = 30
-)
 
 class EditorViewModel(
     initialProject: EditorProject = createDefaultDemoProject()
@@ -53,6 +45,26 @@ class EditorViewModel(
 
     private val _exportConfig = MutableStateFlow(ExportConfig())
     val exportConfig: StateFlow<ExportConfig> = _exportConfig.asStateFlow()
+
+    private val _showExportSettings = MutableStateFlow(false)
+    val showExportSettings: StateFlow<Boolean> = _showExportSettings.asStateFlow()
+
+    private val _showExportProgress = MutableStateFlow(false)
+    val showExportProgress: StateFlow<Boolean> = _showExportProgress.asStateFlow()
+
+    private val _isExporting = MutableStateFlow(false)
+    val isExporting: StateFlow<Boolean> = _isExporting.asStateFlow()
+
+    private val _exportProgress = MutableStateFlow<ExportProgress?>(null)
+    val exportProgress: StateFlow<ExportProgress?> = _exportProgress.asStateFlow()
+
+    private val _exportResultFile = MutableStateFlow<File?>(null)
+    val exportResultFile: StateFlow<File?> = _exportResultFile.asStateFlow()
+
+    private val _exportErrorMessage = MutableStateFlow<String?>(null)
+    val exportErrorMessage: StateFlow<String?> = _exportErrorMessage.asStateFlow()
+
+    private var exportJob: Job? = null
 
     private val _canUndo = MutableStateFlow(false)
     val canUndo: StateFlow<Boolean> = _canUndo.asStateFlow()
@@ -413,6 +425,64 @@ class EditorViewModel(
 
     fun updateFps(fps: Int) {
         _exportConfig.value = _exportConfig.value.copy(frameRate = fps)
+    }
+
+    fun openExportSettings() {
+        _showExportSettings.value = true
+    }
+
+    fun closeExportSettings() {
+        _showExportSettings.value = false
+    }
+
+    fun startExport(context: Context, config: ExportConfig) {
+        _exportConfig.value = config
+        _showExportSettings.value = false
+        _showExportProgress.value = true
+        _isExporting.value = true
+        _exportProgress.value = null
+        _exportResultFile.value = null
+        _exportErrorMessage.value = null
+
+        val outputDir = File(context.getExternalFilesDir(null) ?: context.filesDir, "Exports")
+        val outputFile = File(outputDir, "ProCut_${System.currentTimeMillis()}.mp4")
+
+        val engine = HardwareExportEngine(context)
+
+        exportJob?.cancel()
+        exportJob = viewModelScope.launch {
+            try {
+                val exported = engine.exportProject(
+                    project = _project.value,
+                    config = config,
+                    outputFile = outputFile,
+                    onProgress = { progress ->
+                        _exportProgress.value = progress
+                    }
+                )
+                _isExporting.value = false
+                _exportResultFile.value = exported
+            } catch (ce: CancellationException) {
+                _isExporting.value = false
+                _exportErrorMessage.value = "Export was cancelled."
+            } catch (t: Throwable) {
+                _isExporting.value = false
+                _exportErrorMessage.value = t.localizedMessage ?: "Export failed with unknown error."
+            }
+        }
+    }
+
+    fun cancelExport() {
+        exportJob?.cancel()
+        _isExporting.value = false
+        _exportErrorMessage.value = "Export cancelled."
+    }
+
+    fun dismissExportDialog() {
+        _showExportProgress.value = false
+        _exportResultFile.value = null
+        _exportErrorMessage.value = null
+        _exportProgress.value = null
     }
 
     fun updateAspectRatio(ratio: AspectRatio) {

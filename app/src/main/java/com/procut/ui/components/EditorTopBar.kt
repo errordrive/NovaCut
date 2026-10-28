@@ -19,9 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.procut.model.ExportConfig
+import com.procut.model.ExportResolution
 import com.procut.ui.theme.*
-import com.procut.ui.viewmodel.ExportConfig
-import com.procut.ui.viewmodel.ExportResolution
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
